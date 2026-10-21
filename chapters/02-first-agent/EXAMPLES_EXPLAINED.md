@@ -96,10 +96,10 @@ def search(query: str) -> str:
     results = client.search(query=query, max_results=3)
     
     # Format the results nicely for the LLM
-    formatted = "Search Results:\n"
-    for i, result in enumerate(results.get('results', []), 1):
-        formatted += f"\n{i}. {result.get('title', 'No title')}\n"
-        formatted += f"   {result.get('content', 'No content')[:200]}...\n"
+    formatted = "\n".join([
+        f"- {r['title']}: {r['content']}"
+        for r in results['results']
+    ])
     
     return formatted
 ```
@@ -174,11 +174,7 @@ This teaches you the full flow. In production, you'd use LangChain's wrapper (Ex
 
 **Goal:** Use a PRODUCTION-READY tool that LangChain provides.
 
-This is like **buying a car with automatic transmission**:
-- You don't care about the gears
-- It just works
-- Simple and reliable
-- This is what real developers use
+This is the **standard, recommended approach** for production code.
 
 ### The Code
 
@@ -196,10 +192,11 @@ agent = create_agent(model=llm, tools=tools)
 | Aspect | Example 2 (Custom) | Example 3 (LangChain) |
 |--------|------------------|----------------------|
 | **Code** | 15+ lines | 3 lines |
-| **Control** | You format everything | LangChain handles it |
-| **Errors** | You handle them | LangChain handles them |
-| **Performance** | Custom optimized | Pre-optimized |
-| **Testing** | You test everything | Already tested |
+| **Error Handling** | You write it | Pre-built |
+| **Formatting** | You write it | Pre-optimized |
+| **Testing** | You test it | Already tested |
+| **Maintenance** | You maintain it | LangChain maintains |
+| **Performance** | Custom optimized | Pre-optimized for agents |
 
 ### Step by Step
 
@@ -212,8 +209,8 @@ Agent: Sees the TavilySearch tool
 TavilySearch executes internally:
    - Calls Tavily API
    - Formats results automatically
-   - Handles errors
-   - Returns clean data
+   - Handles errors gracefully
+   - Returns clean data optimized for LLM
          ↓
 Agent: Reads the results
        "Bitcoin is $82,471"
@@ -224,21 +221,39 @@ Final Answer: "Bitcoin is approximately $82,471 USD
 
 ### Why Use This in Production?
 
-✅ **Fewer bugs** — LangChain tested this  
 ✅ **Less code** — 3 lines instead of 15  
-✅ **Better error handling** — Handles API failures  
-✅ **Consistency** — Works with other LangChain tools  
-✅ **Speed** — Pre-optimized  
+✅ **Fewer bugs** — Tested and maintained  
+✅ **Better error handling** — Handles API failures gracefully  
+✅ **Optimized for agents** — Results formatted specifically for LLMs  
+✅ **Consistency** — Works reliably across projects  
 
 ### Key Question
 
 **Q: Why is Example 3 better than Example 2?**
 
-A: Think about hiring:
-- **Example 2** = You hire a contractor, you manage everything
-- **Example 3** = You hire a full-time employee in a managed team
+A: Direct comparison:
 
-Both get the job done, but Example 3 is cleaner, more reliable, and requires less management.
+**Example 2 Problems:**
+- You write 15 lines of code (more to maintain)
+- You handle error cases (what if API fails? Network timeout?)
+- You format results (what if Tavily changes response format?)
+- You test it (need to test formatting, error cases)
+- You maintain it (if Tavily updates, you update your code)
+
+**Example 3 Advantages:**
+- LangChain writes the 15 lines (tested by many users)
+- Error handling built-in (retry logic, timeouts handled)
+- Results pre-formatted for LLMs (optimized)
+- Already tested with thousands of agents
+- Updated by LangChain team (you get improvements automatically)
+
+**Real-world impact:**
+- Example 2 works today, might break if Tavily changes
+- Example 3 keeps working because LangChain maintains it
+- Example 2: You spend 2 hours testing and debugging
+- Example 3: Works immediately, spend time on actual features
+
+This is about **letting experts handle the integration** so you focus on your application.
 
 ---
 
@@ -482,6 +497,8 @@ return formatted
 tool = TavilySearch(...)
 # Done! It handles search, formatting, errors
 ```
+
+Example 3 is better because you get a tested, maintained solution.
 
 ### Q: Why is Example 4 output broken?
 
